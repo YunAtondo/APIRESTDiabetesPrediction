@@ -7,7 +7,7 @@ class Registro(Base):
     __tablename__ = "registros"
 
     id = Column(Integer, primary_key=True, index=True)
-    id_usuario = Column(Integer, ForeignKey("usuarios.id"), nullable=False)  # Cambiado a Integer
+    id_usuario = Column(Integer, ForeignKey("usuarios.id"), nullable=True)  # Cambiado a Integer
     fecha_registro = Column(DateTime, nullable=False)
     AGE = Column(Integer, nullable=False)  # Cambiado a String(10)
     Gender = Column(String(255), nullable=False)  # Cambiado a String(10)

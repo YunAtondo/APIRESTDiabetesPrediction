@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import joblib
+from sklearn.metrics import classification_report, confusion_matrix, f1_score, accuracy_score
+import seaborn as sns
 
 # Cargar y preparar datos
 def load_data():
@@ -101,7 +103,7 @@ def train_model():
     input_size = 4  # HbA1c, Age, BMI, Gender
     hidden_size = 64
     num_classes = 3  # N, P, Y
-    num_epochs = 200  # Reducido para prueba
+    num_epochs = 190  # Reducido para prueba
     learning_rate = 0.001
     batch_size = 64
     
@@ -131,62 +133,78 @@ def train_model():
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     
-    # Entrenamiento
+    best_accuracy = 0.0
     train_losses = []
-    best_accuracy = 0
-    
+    test_accuracies = []
+    f1_scores = []
+
     for epoch in range(num_epochs):
         model.train()
         epoch_loss = 0
-        
+
         for i, (features, labels) in enumerate(train_loader):
-            # Verificación rápida de batch
-            if torch.any(labels < 0) or torch.any(labels >= num_classes):
-                print(f"Batch inválido encontrado en epoch {epoch}: {labels}")
-                continue
-                
             optimizer.zero_grad()
             outputs = model(features)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-            
             epoch_loss += loss.item()
-        
+
         avg_loss = epoch_loss / len(train_loader)
         train_losses.append(avg_loss)
-        
+
         # Validación
         model.eval()
-        correct = 0
-        total = 0
-        
+        all_preds = []
+        all_labels = []
+
         with torch.no_grad():
             for features, labels in test_loader:
                 outputs = model(features)
                 _, predicted = torch.max(outputs.data, 1)
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
-        
-        accuracy = 100 * correct / total
-        
+                all_preds.extend(predicted.cpu().numpy())
+                all_labels.extend(labels.cpu().numpy())
+
+        accuracy = accuracy_score(all_labels, all_preds)
+        f1 = f1_score(all_labels, all_preds, average='macro')  # macro para promedio balanceado
+
+        test_accuracies.append(accuracy)
+        f1_scores.append(f1)
+
         if (epoch+1) % 10 == 0:
-            print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}, Accuracy: {accuracy:.2f}%')
-        
-        # Guardar el mejor modelo
+            print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}, Accuracy: {accuracy:.2%}, F1-score: {f1:.4f}')
+
         if accuracy > best_accuracy:
             best_accuracy = accuracy
             torch.save(model.state_dict(), 'best_diabetes_model.pth')
             joblib.dump(scaler, 'scaler.pkl')
-    
-    # Resultados finales
-    print(f'Mejor precisión obtenida: {best_accuracy:.2f}%')
-    
-    # Graficar pérdida
-    plt.plot(train_losses)
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.title('Training Loss')
+
+    # Reporte final
+    print(f'\nMejor precisión obtenida: {best_accuracy:.2%}')
+    print('\nReporte de clasificación:')
+    print(classification_report(all_labels, all_preds, digits=4))
+
+    # Matriz de confusión
+    cm = confusion_matrix(all_labels, all_preds)
+    plt.figure(figsize=(6, 5))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['N', 'P', 'Y'], yticklabels=['N', 'P', 'Y'])
+    plt.xlabel('Predicción')
+    plt.ylabel('Real')
+    plt.title('Matriz de Confusión')
+    plt.show()
+
+    # Graficar métricas
+    df_metrics = pd.DataFrame({
+        'Loss': train_losses,
+        'Accuracy': test_accuracies,
+        'F1 Score': f1_scores
+    })
+
+    df_metrics.plot(figsize=(10, 6))
+    plt.title('Métricas de entrenamiento por epoch')
+    plt.xlabel('Epoch')
+    plt.ylabel('Valor')
+    plt.grid(True)
     plt.show()
 
 if __name__ == '__main__':

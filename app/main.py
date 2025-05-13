@@ -5,7 +5,7 @@ from .database.database import SessionLocal, engine
 from .models.usuariosModel import Usuario 
 from .models.registrosModel import Registro 
 from .models.recomendacionesPreviasModel import Recomendacion
-from .routes import userRoute, registroRoute, recomendacionRoute, authRoute, passwordResetRoute
+from .routes import userRoute, registroRoute, recomendacionRoute, authRoute, passwordResetRoute, prediccionRoute
 from fastapi.middleware.cors import CORSMiddleware
 from .services.crearAdmin import crear_usuario_admin_predeterminado
 
@@ -38,6 +38,7 @@ app.include_router(registroRoute.router)
 app.include_router(recomendacionRoute.router)
 app.include_router(authRoute.router)
 app.include_router(passwordResetRoute.router)
+app.include_router(prediccionRoute.router)
 
 with SessionLocal() as db:
     crear_usuario_admin_predeterminado(db)
