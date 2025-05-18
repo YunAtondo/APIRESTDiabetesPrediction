@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from ..database.database import Base
 
@@ -14,6 +14,7 @@ class Registro(Base):
     BMI = Column(String(255), nullable=False)  # Cambiado a String(10)
     HbA1c = Column(String(255), nullable=False)  # Cambiado a String(10)
     CLASS = Column(String(255), nullable=False)  # Cambiado a String(10)
+    prediccion_correcta = Column(Boolean, default=True, nullable=True)  # Cambiado a String(10)
     
     # Relación con Usuario
     usuario = relationship("Usuario", back_populates="registros")

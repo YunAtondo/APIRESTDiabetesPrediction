@@ -15,6 +15,7 @@ class RegistroCreate(RegistroBase):
 class Registro(RegistroBase):
     id: int
     fecha_registro: datetime
+    prediccion_correcta: bool
 
     class Config:
         from_attributes = True
