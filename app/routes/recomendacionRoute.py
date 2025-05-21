@@ -24,3 +24,12 @@ def get_recomendaciones_usuario(
 ):
     recomendaciones = obtener_recomendaciones_por_usuario(db, id_usuario)
     return recomendaciones
+
+@router.get("/todas", response_model=List[RecomendacionOut])
+def get_all_recomendaciones(
+    db: Session = Depends(get_db)
+):
+    recomendaciones = db.query(Recomendacion).all()
+    if not recomendaciones:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontraron recomendaciones")
+    return recomendaciones
