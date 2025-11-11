@@ -19,7 +19,7 @@ class TokenData(BaseModel):
     rol: Optional[str] = None
     userid: Optional[int] = None
     
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
@@ -30,6 +30,10 @@ def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password):
+    # Bcrypt tiene un límite de 72 bytes para las contraseñas
+    # Si la contraseña es muy larga, la truncamos
+    if len(password.encode('utf-8')) > 72:
+        password = password[:72]
     return pwd_context.hash(password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):

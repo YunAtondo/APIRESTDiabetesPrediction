@@ -5,3 +5,50 @@ uvicorn app.main:app --reload
 python -m venv venv
 
 pip install -r requirements.txt
+
+# ============================================
+# CONFIGURACIÓN PARA SKYSQL (MariaDB)
+# ============================================
+
+# 1. Actualiza el archivo .env con tu contraseña real:
+#    DATABASE_URL="mysql+pymysql://dbpgf31253012:TU_PASSWORD_REAL@serverless-us-east1.sysp0000.db2.skysql.com:4004/tesis_db?ssl_ca=&ssl_verify_cert=true"
+
+# 2. Probar conexión a SkySQL:
+python test_skysql_connection.py
+
+# 3. Si todo está OK, iniciar la aplicación (creará las tablas automáticamente):
+uvicorn app.main:app --reload
+
+# 4. (Opcional) Migrar datos desde MySQL local a SkySQL:
+#    - Exportar: mysqldump -u root -padmin1234 tesis_db > backup.sql
+#    - Importar: mariadb --host serverless-us-east1.sysp0000.db2.skysql.com --port 4004 --user dbpgf31253012 -p --ssl-verify-server-cert tesis_db < backup.sql
+
+# ============================================
+# NUEVOS ENDPOINTS - GESTIÓN DE MODELOS ML
+# ============================================
+
+# El sistema ahora incluye endpoints para:
+# - Reentrenar la red neuronal desde el frontend
+# - Gestionar versiones de modelos
+# - Ver métricas (Accuracy, F1, Precision, Recall)
+# - Subir datasets personalizados
+# - Seleccionar qué modelo usar en producción
+
+# Documentación completa en:
+# - README_MODEL_RETRAINING.md
+# - API_MODEL_MANAGEMENT.md
+# - FRONTEND_EXAMPLES.ts
+
+# Endpoints disponibles:
+# POST   /model/retrain          - Reentrenar modelo
+# GET    /model/versions         - Listar versiones
+# POST   /model/activate         - Activar versión
+# GET    /model/active           - Ver modelo activo
+# POST   /model/upload-dataset   - Subir CSV
+# DELETE /model/version/{version} - Eliminar versión
+
+# Ejemplo de uso con cURL:
+# curl -X POST http://localhost:8000/model/retrain \
+#   -H "Authorization: Bearer YOUR_TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"use_database": true, "epochs": 190}'

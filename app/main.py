@@ -1,11 +1,11 @@
 from typing import Union
 from sqlalchemy.orm import Session
 from fastapi import FastAPI
-from .database.database import SessionLocal, engine
+from .database.database import SessionLocal, engine, Base
 from .models.usuariosModel import Usuario 
 from .models.registrosModel import Registro 
 from .models.recomendacionesPreviasModel import Recomendacion
-from .routes import userRoute, registroRoute, recomendacionRoute, authRoute, passwordResetRoute, prediccionRoute
+from .routes import userRoute, registroRoute, recomendacionRoute, authRoute, passwordResetRoute, prediccionRoute, modelRoute
 from fastapi.middleware.cors import CORSMiddleware
 from .services.crearAdmin import crear_usuario_admin_predeterminado
 
@@ -21,10 +21,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Crear tablas (solo en desarrollo)
-Usuario.metadata.create_all(bind=engine)
-Registro.metadata.create_all(bind=engine)
-Recomendacion.metadata.create_all(bind=engine)
+# Crear todas las tablas automáticamente
+# Esto creará las tablas si no existen (compatible con SkySQL/MariaDB)
+Base.metadata.create_all(bind=engine)
 
 def get_db():
     db = SessionLocal()
@@ -39,6 +38,7 @@ app.include_router(recomendacionRoute.router)
 app.include_router(authRoute.router)
 app.include_router(passwordResetRoute.router)
 app.include_router(prediccionRoute.router)
+app.include_router(modelRoute.router)
 
 with SessionLocal() as db:
     crear_usuario_admin_predeterminado(db)
