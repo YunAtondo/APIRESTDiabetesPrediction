@@ -17,18 +17,13 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configurar CORS
+# Configurar CORS - Permitir todos los orígenes
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:4200",  # Desarrollo local
-        "https://*.vercel.app",    # Frontend en Vercel
-        "https://*.onrender.com",  # Backend en Render
-        "*"  # Permitir todos (en producción especifica los dominios exactos)
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["*"],  # Permitir todos los orígenes
+    allow_credentials=False,  # Debe ser False cuando allow_origins=["*"]
+    allow_methods=["*"],  # Permitir todos los métodos (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Permitir todos los headers
 )
 
 # Crear todas las tablas automáticamente
