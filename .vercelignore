@@ -1,0 +1,42 @@
+# Ignorar archivos innecesarios en Vercel
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.env.local
+.venv/
+venv/
+ENV/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Cache de modelos (muy pesado para Vercel)
+mlModels/*.pth
+mlModels/versions/
+
+# Tests
+test_*.py
+*_test.py
+
+# VS Code
+.vscode/
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Datasets grandes
+*.csv
+!mlModels/DiabetesDataset.csv
