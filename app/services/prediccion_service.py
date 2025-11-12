@@ -11,8 +11,18 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 model_path = os.path.join(BASE_DIR, "mlModels", "best_diabetes_model.pth")
 scaler_path = os.path.join(BASE_DIR, "mlModels", "scaler.pkl")
 
-# Cargar modelo y scaler
-model, scaler = load_model_and_scaler(model_path, scaler_path)
+# Variables globales para lazy loading (singleton pattern)
+_model = None
+_scaler = None
+
+def get_model_and_scaler():
+    """Lazy loading del modelo - solo carga una vez cuando se necesita"""
+    global _model, _scaler
+    if _model is None or _scaler is None:
+        print("🔄 Cargando modelo de predicción...")
+        _model, _scaler = load_model_and_scaler(model_path, scaler_path)
+        print("✅ Modelo cargado exitosamente!")
+    return _model, _scaler
 
 # Diccionario de clases
 CLASES = {0: "Negative", 1: "Prediabetes", 2: "Diabetes"}
@@ -66,6 +76,9 @@ def recomendacion_por_clasificacion(clase: str) -> str:
 
 
 def clasificar_y_guardar(data, db: Session):
+    # Cargar modelo solo cuando se necesita (lazy loading)
+    model, scaler = get_model_and_scaler()
+    
     gender_encoded = 1 if data.Gender.lower() == "M" else 0
     entrada = [[data.HbA1c, data.BMI, data.AGE, gender_encoded]]
 
