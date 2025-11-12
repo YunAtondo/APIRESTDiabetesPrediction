@@ -11,11 +11,21 @@ from .services.crearAdmin import crear_usuario_admin_predeterminado
 
 
 
-app = FastAPI()
-# Configurar CORS - este middleware debe ser añadido ANTES de cualquier otra configuración de rutas
+app = FastAPI(
+    title="Diabetes Prediction API",
+    description="API para predicción de diabetes con ML",
+    version="1.0.0"
+)
+
+# Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],  # URL de tu aplicación Angular
+    allow_origins=[
+        "http://localhost:4200",  # Desarrollo local
+        "https://*.vercel.app",    # Frontend en Vercel
+        "https://*.onrender.com",  # Backend en Render
+        "*"  # Permitir todos (en producción especifica los dominios exactos)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,5 +53,16 @@ app.include_router(modelRoute.router)
 with SessionLocal() as db:
     crear_usuario_admin_predeterminado(db)
 
+@app.get("/")
 def read_root():
-    return {"message": "Welcome to the API"}
+    return {
+        "message": "Diabetes Prediction API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health"
+    }
+
+@app.get("/health")
+def health_check():
+    """Endpoint de salud para Render"""
+    return {"status": "healthy", "service": "diabetes-prediction-api"}
