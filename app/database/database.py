@@ -15,7 +15,18 @@ if SQLALCHEMY_DATABASE_URL and SQLALCHEMY_DATABASE_URL.startswith("postgres://")
 
 print(f"Database URL configured: {SQLALCHEMY_DATABASE_URL[:30]}...")  # Log parcial para debug
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+# Configuración del engine con SSL y pool para Render PostgreSQL
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={
+        "sslmode": "require",  # Requerir SSL
+        "connect_timeout": 10   # Timeout de 10 segundos
+    },
+    pool_pre_ping=True,  # Verificar conexiones antes de usarlas
+    pool_size=5,  # Número de conexiones en el pool
+    max_overflow=10,  # Conexiones adicionales permitidas
+    pool_recycle=3600  # Reciclar conexiones cada hora
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
